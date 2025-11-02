@@ -750,7 +750,7 @@
 
       function initialLoadStockList() {
         if (!stockList.length) {
-          fetch("/screenshots/stocklist.json")
+          fetch("screenshots/stocklist.json")
             .then((response) => response.json())
             .then((data) => {
               stockList = data;
