@@ -69,7 +69,7 @@
       #controls {
         position: absolute;
         bottom: 20px;
-        left: 50%;
+        left: 47%;
         transform: translateX(-50%);
         background-color: rgba(0, 0, 0, 0.7);
         padding: 10px 20px;
@@ -277,13 +277,15 @@
       <div id="image-counter"></div>
     </div>
 
-          <div id="controls">
-            <button class="control-btn" id="slideshow-start">Start Slideshow</button>
-            <button class="control-btn" id="slideshow-stop">Stop Slideshow</button>
-            <button class="control-btn" id="fullscreen-btn">Toggle Fullscreen</button>
-            <input type="number" id="slideshow-start-index" placeholder="Start from" style="width: 100px; border-radius: 15px; border: 1px solid #555; background: #333; color: white; padding: 10px;"/>
-            <input type="number" id="slideshow-interval" placeholder="Interval (s)" style="width: 100px; border-radius: 15px; border: 1px solid #555; background: #333; color: white; padding: 10px;"/>
-          </div>
+    <div id="controls">
+      <button class="control-btn" id="slideshow-start">Start Slideshow</button>
+      <button class="control-btn" id="slideshow-stop">Stop Slideshow</button>
+      <button class="control-btn" id="fullscreen-btn">Toggle Fullscreen</button>
+      <input type="number" id="slideshow-start-index" placeholder="Start from" style="width: 100px; border-radius: 15px; border: 1px solid #555; background: #333; color: white; padding: 10px" />
+      <input type="number" id="slideshow-interval" placeholder="Interval (s)" style="width: 100px; border-radius: 15px; border: 1px solid #555; background: #333; color: white; padding: 10px" />
+      <button class="control-btn" id="chart">Chart</button>
+      <button class="control-btn" id="profit-loss">P & L</button>
+    </div>
     <div id="toast"></div>
 
     <script>
@@ -629,6 +631,7 @@
       const fullscreenBtn = document.getElementById('fullscreen-btn');
       const imageCounter = document.getElementById('image-counter');
       const toast = document.getElementById('toast');
+      let stockList = [];
 
       function showToast(message) {
         toast.textContent = message;
@@ -662,8 +665,8 @@
         if (slideshowInterval) return; // Already running
 
         if (startFrom >= 0 && startFrom < imagePaths.length) {
-            currentIndex = startFrom;
-            showImage(currentIndex);
+          currentIndex = startFrom;
+          showImage(currentIndex);
         }
 
         const intervalValue = parseInt(slideshowIntervalInput.value, 10);
@@ -705,34 +708,60 @@
       slideshowStartBtn.addEventListener('click', () => {
         const startIndex = parseInt(slideshowStartIndexInput.value, 10) - 1;
         if (!isNaN(startIndex) && startIndex >= 0 && startIndex < imagePaths.length) {
-            startSlideshow(startIndex);
+          startSlideshow(startIndex);
         } else {
-            startSlideshow(currentIndex);
+          startSlideshow(currentIndex);
         }
       });
       slideshowStopBtn.addEventListener('click', stopSlideshow);
       fullscreenBtn.addEventListener('click', toggleFullscreen);
 
+      document.getElementById('chart').addEventListener('click', function () {
+        const symbol = stockList[currentIndex];
+        if (symbol) {
+          window.open(`https://www.screener.in/company/${symbol}/consolidated/#chart`, '_blank', 'width=1500,height=650');
+        }
+      });
+
+      document.getElementById('profit-loss').addEventListener('click', function () {
+        const symbol = stockList[currentIndex];
+        if (symbol) {
+          window.open(`https://www.screener.in/company/${symbol}/consolidated/#profit-loss`, '_blank', 'width=1500,height=650');
+        }
+      });
+
       document.addEventListener('keydown', (e) => {
         if (e.target.tagName.toLowerCase() === 'input') {
-            return;
+          return;
         }
         if (e.key === 'ArrowRight') {
           nextImage();
         } else if (e.key === 'ArrowLeft') {
           prevImage();
         } else if (e.key === ' ') {
-            e.preventDefault();
-            if (slideshowInterval) {
-                stopSlideshow();
-            } else {
-                startSlideshow(currentIndex);
-            }
+          e.preventDefault();
+          if (slideshowInterval) {
+            stopSlideshow();
+          } else {
+            startSlideshow(currentIndex);
+          }
         }
       });
 
+      function initialLoadStockList() {
+        if (!stockList.length) {
+          fetch('screenshots/stocklist.json')
+            .then((response) => response.json())
+            .then((data) => {
+              stockList = data;
+            })
+            .catch((error) => console.error('Error loading JSON:', error));
+        }
+      }
+
       // Initial Load
       showImage(currentIndex);
+      initialLoadStockList();
     </script>
   </body>
 </html>
